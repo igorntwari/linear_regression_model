@@ -1,0 +1,8 @@
+# Static analysis for `flutter analyze`, using the recommended Flutter lint set.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
