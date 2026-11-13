@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sklearn.base import clone
 from sklearn.linear_model import SGDRegressor
@@ -152,6 +153,13 @@ app.add_middleware(
     allow_headers=["Content-Type", "Accept", "Authorization"],
     allow_credentials=True,
 )
+
+
+# The bare service URL sends people to the Swagger page. HEAD is listed explicitly
+# because Render's health check sends HEAD /, which a plain GET route would not answer.
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+def root() -> RedirectResponse:
+    return RedirectResponse(url="/docs")
 
 
 # ---------------------------------------------------------------------------
