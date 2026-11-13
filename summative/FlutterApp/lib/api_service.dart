@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 ///   flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000  (iOS simulator)
 const String apiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
-  defaultValue: 'https://YOUR-SERVICE.onrender.com',
+  defaultValue: 'https://kigali-solar-api.onrender.com',
 );
 
 /// A free Render service sleeps when idle and can take about a minute to wake up.

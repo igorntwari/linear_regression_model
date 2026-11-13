@@ -20,7 +20,7 @@ This model predicts Kigali's daily solar radiation (MJ/m²/day) from that day's 
 
 ## 3. Public API (Swagger UI)
 
-https://YOUR-SERVICE.onrender.com/docs
+https://kigali-solar-api.onrender.com/docs
 
 Endpoints: `POST /predict` (9 weather values in, predicted radiation out), `POST /retrain` (upload a CSV of new days; the model is updated immediately), `GET /docs`.
 
