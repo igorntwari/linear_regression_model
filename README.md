@@ -36,7 +36,7 @@ https://www.youtube.com/watch?v=YOUR-VIDEO-ID
    cd summative/FlutterApp
    flutter pub get
    ```
-3. Set the API URL: in `summative/FlutterApp/lib/api_service.dart`, set the default value of the `apiBaseUrl` constant to the Render service URL, without a trailing slash.
+3. The app is already pointed at the deployed API: the default `apiBaseUrl` in `summative/FlutterApp/lib/api_service.dart` is `https://kigali-solar-api.onrender.com`. No change is needed unless you deploy under a different URL.
 4. Start an emulator (`flutter emulators --launch <emulator_id>`) or plug in an Android phone with USB debugging on.
 5. Run the app:
    ```bash
