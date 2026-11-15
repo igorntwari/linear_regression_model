@@ -8,7 +8,10 @@ This model predicts Kigali's daily solar radiation (MJ/m²/day) from that day's 
 
 ## 2. Dataset
 
-- **Source:** NASA POWER, https://power.larc.nasa.gov/ (daily point API, community `AG`).
+- **Source:** NASA POWER (https://power.larc.nasa.gov/), daily point API, community `AG`, Kigali, 2001-01-01 to 2026-08-30.
+  - Dataset used to train the model (cleaned): [solar_dataset.csv](https://github.com/igorntwari/linear_regression_model/blob/main/summative/API/solar_dataset.csv), then click **Download raw file**.
+  - Original NASA data (raw CSV, direct download): [NASA POWER API link](https://power.larc.nasa.gov/api/temporal/daily/point?parameters=ALLSKY_SFC_SW_DWN,CLRSKY_SFC_SW_DWN,T2M,T2M_MAX,T2M_MIN,T2MDEW,RH2M,PRECTOTCORR,WS2M,PS&community=AG&longitude=30.0619&latitude=-1.9441&start=20010101&end=20260830&format=CSV).
+  - The cleaned file differs from the raw download in three ways: columns are renamed (for example `ALLSKY_SFC_SW_DWN` became `solar_radiation_mj`), missing values (`-999`) are removed, and the engineered features are added.
 - **Location:** Kigali, Rwanda (latitude −1.9441, longitude 30.0619).
 - **Period and size:** 2001-01-01 to 2026-08-30, 9,373 daily rows, no missing values. File: `summative/API/solar_dataset.csv` (date is the index column).
 - **Target:** `solar_radiation_mj`, all-sky surface solar radiation in MJ/m²/day (divide by 3.6 for kWh/m²/day).
