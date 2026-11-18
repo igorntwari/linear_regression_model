@@ -85,6 +85,18 @@ class _PredictionPageState extends State<PredictionPage> {
     return problems.isEmpty ? values : null;
   }
 
+  /// Empties every field and the result area so a new test can start.
+  void _clear() {
+    FocusScope.of(context).unfocus();
+    for (final c in _controllers.values) {
+      c.clear();
+    }
+    setState(() {
+      _error = null;
+      _result = null;
+    });
+  }
+
   Future<void> _predict() async {
     FocusScope.of(context).unfocus();
     final problems = <String>[];
@@ -154,10 +166,27 @@ class _PredictionPageState extends State<PredictionPage> {
                 const SizedBox(height: 12),
               ],
               const SizedBox(height: 4),
-              FilledButton(
-                onPressed: _loading ? null : _predict,
-                style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                child: const Text('Predict'),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('clear_button'),
+                      onPressed: _loading ? null : _clear,
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      icon: const Icon(Icons.clear),
+                      label: const Text('Clear'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: FilledButton(
+                      onPressed: _loading ? null : _predict,
+                      style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      child: const Text('Predict'),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               _ResultArea(loading: _loading, error: _error, result: _result),

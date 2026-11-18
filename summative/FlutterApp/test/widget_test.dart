@@ -18,6 +18,25 @@ void main() {
     expect(error, contains('Humidity must be a number'));
   });
 
+  testWidgets('Clear empties every field and the message area', (tester) async {
+    await tester.pumpWidget(const SolarApp());
+
+    await tester.enterText(find.byKey(const ValueKey('field_humidity_pct')), 'abc');
+    await tester.ensureVisible(find.text('Predict'));
+    await tester.tap(find.text('Predict'));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('error_text')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('clear_button')));
+    await tester.pump();
+
+    final humidity = tester.widget<EditableText>(
+        find.descendant(of: find.byKey(const ValueKey('field_humidity_pct')), matching: find.byType(EditableText)));
+    expect(humidity.controller.text, isEmpty);
+    expect(find.byKey(const ValueKey('error_text')), findsNothing);
+    expect(find.text('The prediction will appear here.'), findsOneWidget);
+  });
+
   test('turns a FastAPI 422 detail list into readable messages', () {
     final msg = describeValidationErrors([
       {'type': 'less_than_equal', 'loc': ['body', 'humidity_pct'], 'msg': 'Input should be <= 100'},
