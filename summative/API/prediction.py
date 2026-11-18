@@ -38,11 +38,10 @@ DATA_PATH = BASE_DIR / "solar_dataset.csv"
 
 TARGET = "solar_radiation_mj"
 
-# ---------------------------------------------------------------------------
 # Feature engineering. MUST STAY IDENTICAL to add_derived and the lists in
 # summative/linear_regression/multivariate.ipynb, otherwise the saved pipeline
 # receives different columns from the ones it was trained on.
-# ---------------------------------------------------------------------------
+
 RAW_NUMERIC = ["temp_max_c", "temp_min_c", "temp_mean_c", "dew_point_c", "humidity_pct",
                "rain_mm", "wind_speed_ms", "clear_sky_radiation_mj"]
 NUM_FEATURES = RAW_NUMERIC + ["temp_range_c", "dryness_gap_c"]
@@ -68,7 +67,6 @@ def add_derived(raw: pd.DataFrame) -> pd.DataFrame:
     out["rain_category"] = pd.cut(out["rain_mm"], [-np.inf, 1, 5, 15, np.inf],
                                   labels=RAIN_CATS).astype(str)
     return out
-# ----------------------------- end of copied code ----------------------------
 
 # Allowed input ranges, shared by /predict (Pydantic) and /retrain (CSV checks).
 # Observed in solar_dataset.csv (2001-2026): temp_max 19.1-33.8, temp_min 8.5-19.4,
@@ -88,9 +86,7 @@ RANGES: dict[str, tuple[float, float]] = {
 }
 TARGET_RANGE = (0.0, 40.0)  # MJ/m²/day; top-of-atmosphere at the equator is ~38
 
-# ---------------------------------------------------------------------------
 # Model state: one module-level pipeline, guarded by a lock.
-# ---------------------------------------------------------------------------
 _model_lock = threading.Lock()    # protects _model and _extra_rows_seen
 _retrain_lock = threading.Lock()  # only one retraining job at a time
 _model = None
@@ -129,16 +125,6 @@ app = FastAPI(
     swagger_ui_oauth2_redirect_url=None,
 )
 
-# CORS. Browsers block a web page from calling an API on another origin unless the
-# API allows that origin. Allowed: the service's own public URL, taken from the
-# RENDER_EXTERNAL_URL environment variable that Render sets automatically (added only
-# when it is set), and the local Flutter web debug servers on ports 5000 and 8080.
-# Everything else is restricted: no "*" wildcard, so other websites cannot call the
-# API from a visitor's browser, and with allow_credentials=True a wildcard would be
-# unsafe anyway. Only GET, POST and OPTIONS (the preflight) are allowed, and only the
-# Content-Type, Accept and Authorization headers. CORS is enforced by browsers only:
-# the Flutter mobile app is not a browser, so CORS does not restrict it. This
-# configuration controls which websites may call the API from a browser.
 ALLOWED_ORIGINS = [
     "http://localhost:5000",
     "http://127.0.0.1:5000",
@@ -164,9 +150,9 @@ def root() -> RedirectResponse:
     return RedirectResponse(url="/docs")
 
 
-# ---------------------------------------------------------------------------
+# 
 # GET /info and GET /health: read-only routes that describe the API and its state
-# ---------------------------------------------------------------------------
+# 
 INPUT_DESCRIPTIONS = {
     "temp_max_c": "Maximum air temperature at 2 m, °C",
     "temp_min_c": "Minimum air temperature at 2 m, °C (cannot exceed temp_max_c)",
@@ -218,9 +204,9 @@ def health():
     return {"status": "ok" if loaded else "model not loaded", "model_loaded": loaded}
 
 
-# ---------------------------------------------------------------------------
+# 
 # /predict
-# ---------------------------------------------------------------------------
+# 
 def _f(name: str, description: str, example):
     lo, hi = RANGES[name]
     return Field(..., ge=lo, le=hi, description=f"{description} Allowed range: {lo} to {hi}.",
@@ -271,9 +257,9 @@ def predict(day: WeatherInput) -> PredictionOut:
                          model=type(model[-1]).__name__)
 
 
-# ---------------------------------------------------------------------------
+# 
 # /retrain
-# ---------------------------------------------------------------------------
+# 
 REQUIRED_COLUMNS = [TARGET] + RAW_NUMERIC  # plus the date in the first column
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 PARTIAL_FIT_PASSES = 5
@@ -321,10 +307,6 @@ def _rows_fitted(pipe) -> int:
 
 
 def _try_save(pipe) -> bool:
-    # Render's free plan has an ephemeral filesystem: this file is lost when the service
-    # restarts or redeploys, and the service then loads the original best_model.pkl from
-    # the repo again. That is accepted for this project. If the disk is read-only we
-    # keep serving the new model from memory and report saved_to_disk = false.
     try:
         tmp = MODEL_PATH.with_suffix(".pkl.tmp")
         joblib.dump(pipe, tmp, compress=3)
