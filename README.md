@@ -49,7 +49,7 @@ Endpoints: `GET /info` (explains the API: purpose, data, model, the 9 inputs wit
 
 ## 4. Video demo
 
-https://www.youtube.com/watch?v=YOUR-VIDEO-ID
+https://www.youtube.com/watch?v=xR_mqu4qYh4
 
 ## 5. Run the mobile app
 
