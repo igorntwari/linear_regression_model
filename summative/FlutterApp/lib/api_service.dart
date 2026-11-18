@@ -2,16 +2,16 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-/// Base URL of the deployed FastAPI service on Render (no trailing slash).
-/// For local testing it can be overridden at build time:
-///   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000   (Android emulator)
-///   flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000  (iOS simulator)
+//Base URL of the deployed FastAPI service on Render (no trailing slash).
+// For local testing it can be overridden at build time:
+//   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000   (Android emulator)
+//   flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000  (iOS simulator)
 const String apiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
   defaultValue: 'https://kigali-solar-api.onrender.com',
 );
 
-/// A free Render service sleeps when idle and can take about a minute to wake up.
+// A free Render service sleeps when idle and can take about a minute to wake up.
 const Duration apiTimeout = Duration(seconds: 90);
 
 class Prediction {
@@ -20,7 +20,7 @@ class Prediction {
   const Prediction(this.mjPerM2Day, this.kwhPerM2Day);
 }
 
-/// An error the server explained to us (e.g. a 422 validation error).
+// An error the server explained to us (e.g. a 422 validation error).
 class ApiException implements Exception {
   final String message;
   const ApiException(this.message);
@@ -28,9 +28,9 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Sends the 9 weather values to POST /predict and returns the prediction.
-/// Throws [ApiException] for validation/server errors; network errors and
-/// timeouts propagate to the caller.
+// Sends the 9 weather values to POST /predict and returns the prediction.
+// Throws [ApiException] for validation/server errors; network errors and
+// timeouts propagate to the caller.
 Future<Prediction> predictSolar(Map<String, num> inputs) async {
   final response = await http
       .post(
@@ -61,8 +61,8 @@ Object? _tryDecode(String text) {
   }
 }
 
-/// Friendly names and allowed ranges. Keep the ranges identical to RANGES in
-/// summative/API/prediction.py.
+// Friendly names and allowed ranges. Keep the ranges identical to RANGES in
+// summative/API/prediction.py.
 const Map<String, (String, num, num)> fieldInfo = {
   'temp_max_c': ('Max temperature', 5, 40),
   'temp_min_c': ('Min temperature', 0, 30),
@@ -75,8 +75,8 @@ const Map<String, (String, num, num)> fieldInfo = {
   'month_num': ('Month', 1, 12),
 };
 
-/// Turns FastAPI's 422 "detail" list into readable lines, e.g.
-/// "Humidity must be between 0 and 100".
+// Turns FastAPI's 422 "detail" list into readable lines, e.g.
+// "Humidity must be between 0 and 100".
 String describeValidationErrors(Object? detail) {
   if (detail is! List) return detail?.toString() ?? 'Invalid input.';
   final lines = <String>[];
