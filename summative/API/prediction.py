@@ -1,6 +1,8 @@
 """Kigali daily solar radiation API (FastAPI).
 
 Routes:
+  GET  /info     - explains the API: purpose, data, model, inputs and endpoints
+  GET  /health   - checks that the service is up and the model is loaded
   POST /predict  - predict a day's solar radiation from 9 weather values
   POST /retrain  - upload a CSV of new days; the model is retrained immediately
   GET  /docs     - Swagger UI (auto-generated)
@@ -160,6 +162,60 @@ app.add_middleware(
 @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 def root() -> RedirectResponse:
     return RedirectResponse(url="/docs")
+
+
+# ---------------------------------------------------------------------------
+# GET /info and GET /health: read-only routes that describe the API and its state
+# ---------------------------------------------------------------------------
+INPUT_DESCRIPTIONS = {
+    "temp_max_c": "Maximum air temperature at 2 m, °C",
+    "temp_min_c": "Minimum air temperature at 2 m, °C (cannot exceed temp_max_c)",
+    "temp_mean_c": "Mean air temperature at 2 m, °C",
+    "dew_point_c": "Dew point temperature at 2 m, °C",
+    "humidity_pct": "Relative humidity at 2 m, %",
+    "rain_mm": "Total rainfall for the day, mm",
+    "wind_speed_ms": "Mean wind speed at 2 m, m/s",
+    "clear_sky_radiation_mj": "Clear-sky (cloud-free) solar radiation for the day, MJ/m²/day",
+    "month_num": "Month of the year, 1 = January ... 12 = December",
+}
+
+
+@app.get("/info", summary="Explain the API: purpose, model, inputs and how to use it")
+def info():
+    model = _current_model()
+    return {
+        "purpose": ("Predicts Kigali's daily solar radiation from that day's weather, so Nyaruka can plan "
+                    "how many e-bicycles its solar charging can power."),
+        "data": {
+            "source": "NASA POWER daily point data, Kigali (latitude -1.9441, longitude 30.0619)",
+            "period": "2001-01-01 to 2026-08-30 (9,373 days)",
+            "target": "solar_radiation_mj: all-sky surface solar radiation, MJ/m²/day",
+        },
+        "model": {
+            "type": type(model[-1]).__name__,
+            "description": ("Linear regression trained with gradient descent, after scaling the numbers and "
+                            "one-hot encoding the month, season and rain category"),
+            "training_rows": _rows_fitted(model) + _extra_rows_seen,
+            "test_mse_at_training_time": "8.08 on 2022-2026, the years the model never saw while training",
+        },
+        "inputs": {name: {"description": desc, "allowed_range": list(RANGES[name])}
+                   for name, desc in INPUT_DESCRIPTIONS.items()},
+        "endpoints": {
+            "GET /info": "This description.",
+            "GET /health": "Checks that the service is up and the model is loaded.",
+            "POST /predict": "Send the 9 inputs as JSON; returns the predicted radiation in MJ/m²/day and kWh/m²/day.",
+            "POST /retrain": "Upload a CSV of new days; the model is updated immediately.",
+            "GET /docs": "This Swagger page, where every endpoint can be tried with 'Try it out'.",
+        },
+        "example_predict_body": WeatherInput.model_config["json_schema_extra"]["example"],
+    }
+
+
+@app.get("/health", summary="Check that the service is running and the model is loaded")
+def health():
+    with _model_lock:
+        loaded = _model is not None
+    return {"status": "ok" if loaded else "model not loaded", "model_loaded": loaded}
 
 
 # ---------------------------------------------------------------------------
